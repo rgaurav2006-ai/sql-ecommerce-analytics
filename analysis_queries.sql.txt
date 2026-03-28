@@ -76,3 +76,33 @@ JOIN order_items oi
 ON o.order_id = oi.order_id
 GROUP BY c.customer_id,c.customer_name
 ORDER BY customer_lifetime_value DESC;
+
+
+/* Discount Effectiveness Analysis */
+-- Analyze revenue and discount impact by product category
+
+WITH category_sales AS (
+
+SELECT 
+p.category,
+SUM(oi.quantity * oi.price) AS gross_revenue,
+SUM(oi.quantity * oi.discount) AS total_discount,
+SUM(oi.quantity * (oi.price - oi.discount)) AS net_revenue
+
+FROM order_items oi
+JOIN products p
+ON oi.product_id = p.product_id
+
+GROUP BY p.category
+
+)
+
+SELECT 
+category,
+gross_revenue,
+total_discount,
+net_revenue,
+ROUND((total_discount / gross_revenue) * 100,2) AS discount_percentage
+
+FROM category_sales
+ORDER BY discount_percentage DESC;
